@@ -51,6 +51,13 @@ class CorpusLoader(CorpusManipulator):
         return result
 
 
+    def get_sentences(self, sent_ids: list[str]):
+        result = {}
+        for sent_id in sent_ids:
+            result[sent_id] = self.sentences[sent_id]
+        return result
+
+
     def sample(self, n: int = 1, random_state: int | None = None) -> pd.DataFrame:
         return self.rels.sample(n, random_state=random_state)['fact'].array
 
