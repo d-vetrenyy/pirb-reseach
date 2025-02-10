@@ -42,6 +42,9 @@ class CorpusLoader(CorpusManipulator):
     def find_fact(self, fact: str) -> str:
         return [k for k, v in self.facts.items() if v == fact][0]
 
+    def get_facts(self, facts: list[str]):
+        { k: v for k, v in self.facts if k in facts }
+
     def sample(self, n: int = 1, random_state: int | None = None) -> pd.DataFrame:
         return self.rels.sample(n, random_state=random_state)['fact'].array
 
