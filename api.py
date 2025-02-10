@@ -49,3 +49,6 @@ if __name__ == '__main__':
     relevant = list(corpus.get_sentences(relevant_ids).values())
     precision = evals.precision(relevant, y)
     recall = evals.recall(relevant, y)
+
+    print(relevant)
+    print(precision, recall)
