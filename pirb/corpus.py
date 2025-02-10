@@ -39,14 +39,21 @@ class CorpusLoader(CorpusManipulator):
         # self.rels = tuple(csv.reader(rels_file, delimiter='\t'))
         self.rels = pd.read_csv(rels_file, delimiter='\t', header=None, names=['fact', 'sentence', 'score'])
 
+
     def find_fact(self, fact: str) -> str:
         return [k for k, v in self.facts.items() if v == fact][0]
 
-    def get_facts(self, facts: list[str]):
-        { k: v for k, v in self.facts if k in facts }
+
+    def get_facts(self, fact_ids: list[str]):
+        result = {}
+        for fact_id in fact_ids:
+            result[fact_id] = self.facts[fact_id]
+        return result
+
 
     def sample(self, n: int = 1, random_state: int | None = None) -> pd.DataFrame:
         return self.rels.sample(n, random_state=random_state)['fact'].array
+
 
     def expected_for(self, fact_id: str) -> pd.DataFrame:
         return self.rels[self.rels['fact'] == fact_id][['sentence', 'score']]

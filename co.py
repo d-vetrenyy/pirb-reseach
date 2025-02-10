@@ -3,4 +3,6 @@ from pirb.corpus import CorpusLoader
 
 corpus = CorpusLoader("./corpus")
 
-print(corpus.get_facts(corpus.sample(2)))
+samples = corpus.sample(2)
+facts = corpus.get_facts(samples)
+print(facts)
