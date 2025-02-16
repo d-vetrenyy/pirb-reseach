@@ -1,75 +1,77 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
+import pandas as pd
+from sentence_transformers import SentenceTransformer, util
+from sklearn.metrics import precision_score, recall_score
+from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-import matplotlib.pyplot as plt
+from dataclasses import dataclass
+from pathlib import Path
+import json
 
-np.random.seed(0)
-torch.manual_seed(0)
 
-# Create a dataset
-num_samples = 100
-X = np.random.rand(num_samples, 2)  # 2D input
-y = (X[:, 0] + X[:, 1] > 1).astype(int)  # Simple binary classification
+MODEL_LIST = ['sentence-transformers/all-MiniLM-L6-v2']
 
-# Convert to PyTorch tensors
-X_tensor = torch.FloatTensor(X)
-y_tensor = torch.LongTensor(y)
 
-# Define a simple feedforward neural network
-class SimpleNN(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.fc1 = nn.Linear(2, 4)  # Input layer to hidden layer
-        self.fc2 = nn.Linear(4, 2)  # Hidden layer to output layer
+@dataclass
+class Dataset:
+    facts: dict[str, str]
+    sentences: dict[str, str]
+    rels: pd.DataFrame # [fact_id, sent_id, score]
 
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))  # Activation function
-        x = self.fc2(x)               # Output layer
-        return x
+    @staticmethod
+    def from_filesystem(path: str|Path):
+        path = Path(path)
+        facts_path = path / "facts.json"
+        sentences_path = path / "sentences.json"
+        rels_path = path / "rels.tsv"
 
-# Instantiate the model, define the loss function and the optimizer
-model = SimpleNN()
-criterion = nn.CrossEntropyLoss()  # Suitable for multi-class classification
-optimizer = optim.SGD(model.parameters(), lr=0.1)
+        with open(facts_path, 'r') as facts_file:
+            facts = json.load(facts_file)
+        with open(sentences_path, 'r') as sentences_file:
+            sentences = json.load(sentences_file)
+        rels = pd.read_csv(rels_path, delimiter='\t', header=None, names=['fact_id', 'sentence_id', 'score'])
+        return Dataset(facts, sentences, rels)
 
-# Training the model
-num_epochs = 100
-for epoch in range(num_epochs):
-    model.train()
+    @property
+    def documents(self) -> list[str]:
+        return list(self.sentences.values())
 
-    # Zero the gradients
-    optimizer.zero_grad()
+    def sample(self, n: int = 1, random_state: int | None = None) -> pd.DataFrame:
+        return self.rels.sample(n, random_state=random_state)['fact_id'].array
 
-    # Forward pass
-    outputs = model(X_tensor)
+    def relevant_for(self, query_id: str) -> pd.DataFrame:
+        return self.rels[self.rels['fact_id'] == query_id][['sentence_id', 'score']]
 
-    # Compute the loss
-    loss = criterion(outputs, y_tensor)
 
-    # Backward pass and optimization
-    loss.backward()
-    optimizer.step()
+dataset = Dataset.from_filesystem('./corpus')
 
-    if (epoch + 1) % 10 == 0:
-        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
+query_id = dataset.sample()[0]
+query = dataset.facts[query_id]
+relevant_true_ids = dataset.relevant_for(query_id)['sentence_id'].tolist()
+print('Query:', query)
+print('Known relevant:')
+for relevant_true_id in relevant_true_ids:
+    print('\t', dataset.sentences[relevant_true_id])
 
-# Visualizing the decision boundary
-def plot_decision_boundary(model, X, y):
-    x_min, x_max = X[:, 0].min() - 0.1, X[:, 0].max() + 0.1
-    y_min, y_max = X[:, 1].min() - 0.1, X[:, 1].max() + 0.1
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.01),
-                         np.arange(y_min, y_max, 0.01))
-    Z = model(torch.FloatTensor(np.c_[xx.ravel(), yy.ravel()]))
-    _, Z = torch.max(Z, 1)
-    Z = Z.reshape(xx.shape)
+for model_name in MODEL_LIST:
+    model = SentenceTransformer(model_name)
+    doc_embeddings = model.encode(dataset.documents, show_progress_bar=True, output_value='sentence_embedding', convert_to_tensor=True)
+    query_embedding = model.encode(query, show_progress_bar=True, output_value='sentence_embedding', convert_to_tensor=True)
 
-    plt.contourf(xx, yy, Z.detach().numpy(), alpha=0.8)
-    plt.scatter(X[:, 0], X[:, 1], c=y, edgecolors='k', marker='o')
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
-    plt.title('Decision Boundary')
-    plt.show()
+    similarities = util.pytorch_cos_sim(query_embedding, doc_embeddings)[0]
+    relevant_pred = {sid: dataset.sentences[sid] for sid, score in zip(dataset.sentences.keys(), similarities) if score > 0.7}
 
-# Plot the decision boundary
-plot_decision_boundary(model, X, y)
+    print("Model retrieved:")
+    for retrieved_relevant in relevant_pred.values():
+        print(retrieved_relevant)
+
+    relevant_pred_ids = list(relevant_pred.keys())
+
+    tp = len(set(relevant_pred_ids).intersection(set(relevant_true_ids)))
+    fp = len(set(relevant_pred_ids) - set(relevant_true_ids))
+    fn = len(set(relevant_true_ids) - set(relevant_pred_ids))
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+
+    print(f"{precision = }")
+    print(f"{recall = }")

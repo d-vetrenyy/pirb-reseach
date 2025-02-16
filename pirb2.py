@@ -51,7 +51,6 @@ class RetrieverModel:
     def __init__(self, model_name: str, documents: list[str]|None = None, similarity_func = None):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name)
-
         self._embeddings = np.array([])
         if documents != None:
             self.embeddings = self.encode_documents(documents)
