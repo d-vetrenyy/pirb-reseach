@@ -64,3 +64,4 @@ class CorpusLoader(CorpusManipulator):
 
     def expected_for(self, fact_id: str) -> pd.DataFrame:
         return self.rels[self.rels['fact'] == fact_id][['sentence', 'score']]
+
