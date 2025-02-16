@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from bs4 import BeautifulSoup
 import pirb.evals as evals
 import pirb.tokenization as tokenization
+import json
+import csv
 
 
 SENTENCE_TOKENIZE_FIXES = [
@@ -22,7 +24,7 @@ class ScoredSentence:
 
     @staticmethod
     def pattern() -> str:
-        return r"[Ss]core\s*=\s*(\d+)\s*:\s*(.+?)(?=\s*[Ss]core =|\Z)"
+        return r"[Ss]core\s*=\s*([\.\d]+)\s*:\s*(.+?)(?=\s*[Ss]core =|\Z)"
 
 
 def scored_sentences_from_blob(blob) -> list[ScoredSentence]:
@@ -30,8 +32,8 @@ def scored_sentences_from_blob(blob) -> list[ScoredSentence]:
     result = []
     for score, sentence_blob in re.findall(ScoredSentence.pattern(), blob):
         for sentence in tokenization.split_by_sentence(sentence_blob, fixes=SENTENCE_TOKENIZE_FIXES):
-            result.append(ScoredSentence(score, sentence))
-        return result
+            result.append(ScoredSentence(float(score), sentence))
+    return result
 
 
 def content_of_link(link: str) -> bytes | None:
@@ -70,10 +72,18 @@ def article_of_content(content: bytes) -> str:
 if __name__ == '__main__':
     workbook = openpyxl.load_workbook('facts.xlsx')
 
+    facts = {}
+    sentences = {}
+    rels = []
+
     for sheetname in workbook.sheetnames:
+        if sheetname != 'Афанасьева':
+            break
         sheet = workbook[sheetname]
 
         for fact_cell in sheet['B'][1:]:
+            facts[f"{sheetname}::{fact_cell.row}"] = fact_cell.value # adding new fact in memory
+
             related_rows = sheet[fact_cell.row][2:]
             link_refblob_pairs = zip(related_rows[::2], related_rows[1::2])
             link_refblob_pairs = map(lambda pair: (pair[0].value, pair[1].value), link_refblob_pairs)
@@ -87,15 +97,36 @@ if __name__ == '__main__':
                 if len(scored_sentences) == 0:
                     print(f"WARN:\tskipping link with unparsable blob (in {sheetname}:{fact_cell.row})", file=sys.stderr)
                     continue
-                scsent_df = pd.DataFrame({
-                    'sentences': [scsent.sentence for scsent in scored_sentences],
-                    'scores': [scsent.score for scsent in scored_sentences]})
 
                 print(f"INFO:\tfetching {link}...", file=sys.stderr)
-                link_content = content_of_link()
+                link_content = content_of_link(link)
                 if link_content == None:
                     continue
 
                 article = article_of_content(link_content)
                 article_sentences = tokenization.split_by_sentence(article, fixes=SENTENCE_TOKENIZE_FIXES)
-                article_df = pd.Series(article_sentences)
+
+                for i, article_sentence in enumerate(article_sentences):
+                    sentences[f"{link}::{i}"] = article_sentence
+
+                df_table = pd.DataFrame({
+                    'sentence': [sc.sentence for sc in scored_sentences],
+                    'score': [sc.score for sc in scored_sentences],
+                })
+                df_article = pd.DataFrame(article_sentences, columns=['sentence'])
+                merged_df = df_article.merge(df_table, on='sentence', how='left')
+                result = merged_df[merged_df['score'].notna()]
+
+                for row in result.itertuples():
+                    rels.append((f"{sheetname}::{fact_cell.row}", f"{link}::{row.Index}", row.score))
+
+    print('\n\n\n\n')
+    # print(facts)
+    # print(sentences)
+    # print(rels)
+    with open('corpus/facts.json', 'w') as factsfile:
+        json.dump(facts, factsfile, ensure_ascii=False, indent=1)
+    with open('corpus/sentences.json', 'w') as sentfile:
+        json.dump(sentences, sentfile, ensure_ascii=False, indent=1)
+    with open('corpus/rels.tsv', 'w') as relsfile:
+        csv.writer(relsfile, delimiter='\t').writerows(rels)

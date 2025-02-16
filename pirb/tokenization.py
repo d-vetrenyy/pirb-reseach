@@ -1,7 +1,7 @@
 import nltk
 import re
 
-def split_by_sentence(text: str, fixes: list[str] | None, lang="russian") -> list[str]:
+def split_by_sentence(text: str, fixes: list[str] | None = None, lang="russian") -> list[str]:
     fixed, i = [], 0
     fixes = fixes or []
 
