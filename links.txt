@@ -1,7 +1,9 @@
 [1] Benchmarking Large Language Models in Retrieval-Augmented Generation - https://arxiv.org/pdf/2309.01431 - p. 5-6
 [2] Evalverse: Unified and Accessible Library for Large Language Model
 Evaluation - https://aclanthology.org/2024.emnlp-demo.3.pdf
-
+[3] FanOutQA: A Multi-Hop, Multi-Document
+Question Answering Benchmark for Large Language Models - https://aclanthology.org/2024.acl-short.2.pdf
+[4] FreeEval - https://aclanthology.org/2024.emnlp-demo.1.pdf
 
 (n)DCG:
 https://www.geeksforgeeks.org/normalized-discounted-cumulative-gain-multilabel-ranking-metrics-ml/

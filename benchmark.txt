@@ -49,3 +49,21 @@ INFO - benchmarking: gte-multilingual-base + euclidean...
 ERROR - float division by zero
 INFO - benchmarking: gte-multilingual-base + dot_product...
 ERROR - float division by zero
+
+@@@@@@@@@@@@@@@@@@@@@@@
+
+Query: Правитель африканского королевства продал за мизерную плату землю, на которой построили столицу Сьерра-Леоне. [Афанасьева::33]
+Batches: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 1753/1753 [02:33<00:00, 11.41it/s]
+INFO - benchmarking sentence-transformers/all-MiniLM-L6-v2...
+        + dot_sim
+                dot_bench.precision=0.0
+                dot_bench.recall=0.0
+                dot_bench.f1_score=0.0
+        + cos_sim
+                cos_bench.precision=1.0
+                cos_bench.recall=3.566
+                cos_bench.f1_score=7.133
+        + euc_sim
+                euc_bench.precision=1.0
+                euc_bench.recall=3.667
+                euc_bench.f1_score=3.912
