@@ -2,6 +2,7 @@ from pv3.dataset import Dataset
 from pv3.benchmark import Benchmark
 from pv3.util import get_dotenv
 from sentence_transformers import SentenceTransformer, util
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances, safe_sparse_dot
 import sys
 
 
@@ -36,7 +37,8 @@ for model_name in MODEL_LIST:
 
         print(f"INFO - benchmarking: {model_name.split('/')[1]} + cosine_similarity...")
         try:
-            cos_sims = util.pytorch_cos_sim(tensor_fact_embeddings, tensor_embeddings_by_docs)[0].numpy(force=True)
+            # cos_sims = util.pytorch_cos_sim(tensor_fact_embeddings, tensor_embeddings_by_docs)[0].numpy(force=True)
+            cos_sims = cosine_similarity(tensor_fact_embeddings, tensor_embeddings_by_docs)[0]
             benchmark = Benchmark(dset, fact_id, Benchmark.rel_pred(cos_sims, threshold=0.85))
             print(f"{benchmark.precision=}\n{benchmark.recall=}\n{benchmark.f1_score=}\n")
         except Exception as e:
@@ -44,7 +46,8 @@ for model_name in MODEL_LIST:
 
         print(f"INFO - benchmarking: {model_name.split('/')[1]} + euclidean...")
         try:
-            euc_sims = util.euclidean_sim(tensor_fact_embeddings, tensor_embeddings_by_docs)[0].numpy(force=True)
+            # euc_sims = util.euclidean_sim(tensor_fact_embeddings, tensor_embeddings_by_docs)[0].numpy(force=True)
+            euc_sims = euclidean_distances(tensor_fact_embeddings, tensor_embeddings_by_docs)[0]
             benchmark = Benchmark(dset, fact_id, Benchmark.rel_pred(euc_sims, threshold=0.8))
             print(f"{benchmark.precision=}\n{benchmark.recall=}\n{benchmark.f1_score=}\n")
         except Exception as e:
@@ -52,7 +55,8 @@ for model_name in MODEL_LIST:
 
         print(f"INFO - benchmarking: {model_name.split('/')[1]} + dot_product...")
         try:
-            dot_sims = util.dot_score(tensor_fact_embeddings, tensor_embeddings_by_docs)[0].numpy(force=True)
+            # dot_sims = util.dot_score(tensor_fact_embeddings, tensor_embeddings_by_docs)[0].numpy(force=True)
+            dot_sims = safe_sparse_dot(tensor_fact_embeddings, tensor_embeddings_by_docs)[0]
             benchmark = Benchmark(dset, fact_id, Benchmark.rel_pred(dot_sims, threshold=0.8))
             print(f"{benchmark.precision=}\n{benchmark.recall=}\n{benchmark.f1_score=}\n")
         except Exception as e:

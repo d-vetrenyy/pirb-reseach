@@ -1,0 +1,51 @@
+Query: Древнеегипетский скрипторий (на илл.) был регистратурой, поликлиникой, магической библиотекой и государственным PR-отделом. [Афанасьева::102]
+Batches: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 1753/1753 [08:30<00:00,  3.43it/s]
+INFO - benchmarking: all-MiniLM-L6-v2 + cosine_similarity...
+ERROR - float division by zero
+INFO - benchmarking: all-MiniLM-L6-v2 + euclidean...
+ERROR - float division by zero
+INFO - benchmarking: all-MiniLM-L6-v2 + dot_product...
+benchmark.precision=1.0
+benchmark.recall=0.0625
+benchmark.f1_score=0.11764705882352941
+
+Batches: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 1753/1753 [29:52<00:00,  1.02s/it]
+INFO - benchmarking: sbert-all-MiniLM-L6-v2 + cosine_similarity...
+benchmark.precision=1.0
+benchmark.recall=3.931126660901014e-05
+benchmark.f1_score=7.861944258815204e-05
+
+INFO - benchmarking: sbert-all-MiniLM-L6-v2 + euclidean...
+ERROR - float division by zero
+INFO - benchmarking: sbert-all-MiniLM-L6-v2 + dot_product...
+benchmark.precision=1.0
+benchmark.recall=2.123502930434044e-05
+benchmark.f1_score=4.246915677489224e-05
+
+modules.json: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████| 349/349 [00:00<?, ?B/s]
+README.md: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 123k/123k [00:00<00:00, 1.51MB/s]
+sentence_bert_config.json: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 55.0/55.0 [00:00<?, ?B/s]
+config.json: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████| 1.43k/1.43k [00:00<?, ?B/s]
+configuration.py: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████| 7.13k/7.13k [00:00<?, ?B/s]
+A new version of the following files was downloaded from https://huggingface.co/Alibaba-NLP/new-impl:
+- configuration.py
+. Make sure to double-check they do not contain any added malicious code. To avoid downloading new versions of the code file, you can pin a revision.
+modeling.py: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 59.0k/59.0k [00:00<00:00, 4.23MB/s]
+A new version of the following files was downloaded from https://huggingface.co/Alibaba-NLP/new-impl:
+- modeling.py
+. Make sure to double-check they do not contain any added malicious code. To avoid downloading new versions of the code file, you can pin a revision.
+model.safetensors: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 611M/611M [00:32<00:00, 18.7MB/s]
+Some weights of the model checkpoint at Alibaba-NLP/gte-multilingual-base were not used when initializing NewModel: {'classifier.bias', 'classifier.weight'}
+- This IS expected if you are initializing NewModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing NewModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+tokenizer_config.json: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 1.15k/1.15k [00:00<?, ?B/s]
+tokenizer.json: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 17.1M/17.1M [00:00<00:00, 17.6MB/s]
+special_tokens_map.json: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 964/964 [00:00<?, ?B/s]
+1_Pooling%2Fconfig.json: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 190/190 [00:00<?, ?B/s]
+Batches: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████| 1753/1753 [1:02:41<00:00,  2.15s/it]
+INFO - benchmarking: gte-multilingual-base + cosine_similarity...
+ERROR - float division by zero
+INFO - benchmarking: gte-multilingual-base + euclidean...
+ERROR - float division by zero
+INFO - benchmarking: gte-multilingual-base + dot_product...
+ERROR - float division by zero
